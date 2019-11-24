@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+
+
+# check arguments for task
+    # if invalid args, fail
+    # else execute task
+        # check validity of structured data
+            # if invalid file, fail
+    
+
+def main():
+
+
+# run main if executed as command
+if __name__ == '__main__':
+    main()
