@@ -1,0 +1,22 @@
+{
+	"dotdirs" : [
+		"repo" : {
+			"loaction" : "/home/no5a/dev/dotfiles/",
+			"contents" : [
+				"target" : {
+					"directory" : "/home/no5a/",
+					"files" : [ 
+						"name" : ".bashrc",
+						"name" : ".profile"
+					]
+				},
+				"target" : { 
+					"directory" : "/home/no5a/.config",
+					"files" : [ 
+						"name" : "herbstluftwm"
+					]
+				}
+			]
+		}
+	]
+}
