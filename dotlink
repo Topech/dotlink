@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import json
 
 # check arguments for task
     # if invalid args, fail
@@ -9,6 +10,23 @@
     
 
 def main():
+    json_file = open('test_data.json')
+    repos = json.load(json_file)['dotdirs']
+
+    # iterate through dotfile repo
+    for repo in repos:
+        print(repo['location'])
+        
+        # iterate through each target location
+        for target in repo['contents']:
+            print('\t' + target['directory'])
+            
+            # iterate throgh each file
+            for dotfile in target['files']:
+                print('\t\t' + dotfile['name'])
+        
+    return repos
+
 
 
 # run main if executed as command
