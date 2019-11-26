@@ -11,7 +11,7 @@
 					]
 				},
 				{ 
-					"directory" : "/home/no5a/.config",
+					"directory" : "/home/no5a/.config/",
 					"files" : [ 
 						{"name" : "herbstluftwm"}
 					]
