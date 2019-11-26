@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import json
+import subprocess
+import sys
 
 # check arguments for task
     # if invalid args, fail
@@ -9,26 +11,60 @@ import json
             # if invalid file, fail
     
 
-def main():
-    json_file = open('test_data.json')
-    repos = json.load(json_file)['dotdirs']
 
+# calls the link command to make a link from 'link' to 'target'
+# is a wrapper for ln
+def link_wrapper(link, target):
+    #TODO check if file exists alreay
+    #       - if so, fail
+    #     check if already linked correctly
+    print('\tpretend: {} -> {}'.format(target,link))
+    return
+
+
+# loads the json file into a dictionary
+def load_repos_from_json(filename):
+    try:
+        with open(filename, 'r') as json_file:
+            json_obj = json.load(json_file)
+            repos = json_obj['dotdirs']
+            return repos
+    except IOError:
+        print('json file {} doesn\'t exist'.format(filename))
+        sys.exit()
+    except JSONDecodeError:
+        print('json file {} is malformed'.format(filename))
+        sys.exit()
+    
+
+# iterates through all repos stored in json file
+def iterate_through_repos(repos):
     # iterate through dotfile repo
     for repo in repos:
-        print(repo['location'])
+        print('repo: ' + repo['location'])
         
         # iterate through each target location
         for target in repo['contents']:
-            print('\t' + target['directory'])
+            print('target: ' + target['directory'])
             
             # iterate throgh each file
             for dotfile in target['files']:
-                print('\t\t' + dotfile['name'])
+                
+                link_dir = repo['location'] + dotfile['name']
+                target_dir = target['directory'] + dotfile['name']
+                link_wrapper(link_dir, target_dir)
         
-    return repos
+    return 
 
 
 
-# run main if executed as command
+
+def main():
+    repos = load_repos_from_json('test_data.json')
+    iterate_through_repos(repos) 
+    return
+
+
+# run main if executed as script
 if __name__ == '__main__':
     main()
