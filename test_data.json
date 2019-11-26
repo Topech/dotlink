@@ -1,17 +1,17 @@
 {
 	"dotdirs" : [
 		{
-			"location" : "/home/no5a/dev/dotfiles/",
+			"location" : "~/dev/dotfiles/",
 			"contents" : [
 				{
-					"directory" : "/home/no5a/",
+					"directory" : "~/",
 					"files" : [ 
 						{"name" : ".bashrc"},
 						{"name" : ".profile"}
 					]
 				},
 				{ 
-					"directory" : "/home/no5a/.config/",
+					"directory" : "~/.config/",
 					"files" : [ 
 						{"name" : "herbstluftwm"}
 					]
