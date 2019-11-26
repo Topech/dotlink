@@ -1,21 +1,33 @@
 #!/usr/bin/python3
 
+desc = '''dotlink automates the spreading of dotfiles to new systems and uses 
+links to dotfile repos to make the use of version control easier.'''
+
+
 import json
 import subprocess
 import sys
-
-# check arguments for task
-    # if invalid args, fail
-    # else execute task
-        # check validity of structured data
-            # if invalid file, fail
-    
+import argparse
 
 
-# calls the link command to make a link from 'link' to 'target'
+# globals
+args = None
+
+
+# get arguments and set flags as necessary
+def process_args():
+    # init parser and add arg opts
+    parser = argparse.ArgumentParser(description = desc)
+    parser.add_argument("-l", "--link", metavar="FILE", nargs='?', help="link the given file to the correct position")
+
+    args = parser.parse_args()
+    return args
+
+
+# calls the link command to make a soft link from 'link' to 'target'
 # is a wrapper for ln
 def link_wrapper(link, target):
-    #TODO check if file exists alreay
+    #TODO check if file exists already
     #       - if so, fail
     #     check if already linked correctly
     print('\tpretend: {} -> {}'.format(target,link))
@@ -23,18 +35,19 @@ def link_wrapper(link, target):
 
 
 # loads the json file into a dictionary
+# fails if cannot read or json is malformed 
 def load_repos_from_json(filename):
     try:
         with open(filename, 'r') as json_file:
             json_obj = json.load(json_file)
             repos = json_obj['dotdirs']
-            return repos
     except IOError:
         print('json file {} doesn\'t exist'.format(filename))
         sys.exit()
-    except JSONDecodeError:
+    except json.JSONDecodeError:
         print('json file {} is malformed'.format(filename))
         sys.exit()
+    return repos
     
 
 # iterates through all repos stored in json file
@@ -60,6 +73,7 @@ def iterate_through_repos(repos):
 
 
 def main():
+    process_args()
     repos = load_repos_from_json('test_data.json')
     iterate_through_repos(repos) 
     return
