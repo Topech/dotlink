@@ -13,7 +13,7 @@ import os.path
 
 # globals
 G_args = None
-
+json_path = 'test_data.json'
 
 def verbose_print(msg):
     if G_args.verbose:
@@ -48,7 +48,7 @@ def link_wrapper(source, dest):
     source = os.path.expanduser(source)
     dest = os.path.expanduser(dest)
 
-    #     check if already sourceed correctly
+    # check if already sourced correctly
     if os.path.islink(dest):
         #TODO: what do when already source?
         verbose_print('\tlink already at {}'.format(dest))
@@ -83,6 +83,20 @@ def load_repos_from_json(filename):
     return repos
     
 
+
+def add_path(path, filename, repo_name):
+    # load repo
+    repos = load_repo_from_json(json_path)
+    repo = repos[repo_name]
+    ##TODO: below
+    # add repo to json file
+    ##repo[path] = 
+
+    
+    pass
+
+
+
 # iterates through all repos stored in json file
 def iterate_through_repos(repos):
     # iterate through dotfile repo
@@ -108,7 +122,7 @@ def iterate_through_repos(repos):
 
 def main():
     process_args()
-    repos = load_repos_from_json('test_data.json')
+    repos = load_repos_from_json(json_path)
     iterate_through_repos(repos) 
     return
 
