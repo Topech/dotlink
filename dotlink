@@ -8,29 +8,62 @@ import json
 import subprocess
 import sys
 import argparse
+import os.path
 
 
 # globals
-args = None
+G_args = None
 
+
+def verbose_print(msg):
+    if G_args.verbose:
+        print(msg)
+    return
 
 # get arguments and set flags as necessary
+# -l --link [FILE] 
+# -v --verbose
+# -h --help
+# -f --force
+#TODO: ADD
+#TODO: REMOVE
+#TODO: LIST
 def process_args():
+    global G_args
     # init parser and add arg opts
     parser = argparse.ArgumentParser(description = desc)
     parser.add_argument("-l", "--link", metavar="FILE", nargs='?', help="link the given file to the correct position")
+    parser.add_argument("-v", "--verbose", help='be verbose during execution', action='store_true')
+    parser.add_argument("-f", "--force", help='force overriding existing files', action='store_true')
 
-    args = parser.parse_args()
-    return args
+    G_args = parser.parse_args()
+    return 
+
 
 
 # calls the link command to make a soft link from 'link' to 'target'
 # is a wrapper for ln
-def link_wrapper(link, target):
-    #TODO check if file exists already
-    #       - if so, fail
-    #     check if already linked correctly
-    print('\tpretend: {} -> {}'.format(target,link))
+def link_wrapper(source, dest):
+    # expand the home directory '~'
+    source = os.path.expanduser(source)
+    dest = os.path.expanduser(dest)
+
+    #     check if already sourceed correctly
+    if os.path.islink(dest):
+        #TODO: what do when already source?
+        verbose_print('\tlink already at {}'.format(dest))
+        return
+    # check if paths are already used
+    elif os.path.exists(dest):
+        if G_args.force:
+            #TODO: remove/move/rename file?
+            verbose_print('\tpretend: rm {}'.format(dest))
+        else:
+            print('error: cannot create symlink at {}'.format(dest))
+            sys.exit()
+    #TODO: make symlink 
+    verbose_print('\tpretend: {} -> {}'.format(dest,source))
+
     return
 
 
@@ -54,11 +87,11 @@ def load_repos_from_json(filename):
 def iterate_through_repos(repos):
     # iterate through dotfile repo
     for repo in repos:
-        print('repo: ' + repo['location'])
+        verbose_print('repo: ' + repo['location'])
         
         # iterate through each target location
         for target in repo['contents']:
-            print('target: ' + target['directory'])
+            verbose_print('target: ' + target['directory'])
             
             # iterate throgh each file
             for dotfile in target['files']:
@@ -68,6 +101,7 @@ def iterate_through_repos(repos):
                 link_wrapper(link_dir, target_dir)
         
     return 
+
 
 
 
