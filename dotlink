@@ -124,7 +124,7 @@ def iterate_through_repos(repos):
                 
                 link_dir = repo['location'] + dotfile['name']
                 target_dir = target['directory'] + dotfile['name']
-                link_wrapper(link_dir, target_dir)
+                link_dotfile(link_dir, target_dir)
         
     return 
 
