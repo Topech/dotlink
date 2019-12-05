@@ -44,26 +44,38 @@ def process_args():
 # calls the link command to make a soft link from 'link' to 'target'
 # is a wrapper for ln
 def link_wrapper(source, dest):
+    # make symlink 
+    link_args = ['ln', '-s', source, dest]
+    subprocess.call(link_args)
+    return
+    
+
+
+def link_dotfile(source, dest):
+    #TODO: check that the sibprocesses complete properly
     # expand the home directory '~'
     source = os.path.expanduser(source)
     dest = os.path.expanduser(dest)
 
-    # check if already sourced correctly
+    # check if already linked correctly
     if os.path.islink(dest):
-        #TODO: what do when already source?
+        #TODO: what do when already link and force?
         verbose_print('\tlink already at {}'.format(dest))
         return
-    # check if paths are already used
+    # catch any files in the way
     elif os.path.exists(dest):
+        # remove file if force flag given
         if G_args.force:
             #TODO: remove/move/rename file?
-            verbose_print('\tpretend: rm {}'.format(dest))
+            rm_args = ['rm', '-r', dest]
+            verbose_print('\trm {}'.format(dest))
+            subprocess.call(rm_args)
         else:
             print('error: cannot create symlink at {}'.format(dest))
             sys.exit()
-    #TODO: make symlink 
-    verbose_print('\tpretend: {} -> {}'.format(dest,source))
 
+    link_wrapper(source, dest)
+    verbose_print('\tlink made from {} to {}'.format(dest, source))
     return
 
 
