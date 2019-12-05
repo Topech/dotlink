@@ -13,7 +13,7 @@ import os.path
 
 # globals
 G_args = None
-json_path = 'test_data.json'
+json_path = 'linkmap.json'
 
 def verbose_print(msg):
     if G_args.verbose:
@@ -21,27 +21,28 @@ def verbose_print(msg):
     return
 
 # get arguments and set flags as necessary
-# -l --link [FILE] 
 # -v --verbose
 # -h --help
 # -f --force
+#TODO: -l --link [FILE] 
 #TODO: ADD
 #TODO: REMOVE
 #TODO: LIST
+#TODO: CLEAR
 def process_args():
     global G_args
     # init parser and add arg opts
     parser = argparse.ArgumentParser(description = desc)
-    parser.add_argument("-l", "--link", metavar="FILE", nargs='?', help="link the given file to the correct position")
     parser.add_argument("-v", "--verbose", help='be verbose during execution', action='store_true')
     parser.add_argument("-f", "--force", help='force overriding existing files', action='store_true')
+    #parser.add_argument("-l", "--link", metavar="FILE", nargs='?', help="link the given file to the correct position")
 
     G_args = parser.parse_args()
     return 
 
 
 
-# calls the link command to make a soft link from 'link' to 'target'
+# calls the link command to make a soft link from 'source' to 'dest'
 # is a wrapper for ln
 def link_wrapper(source, dest):
     # make symlink 
@@ -50,7 +51,14 @@ def link_wrapper(source, dest):
     return
     
 
+# calls the rm command to remove the file at 'path' recursively
+def rm_wrapper(path):
+            #TODO: remove/move/rename file?
+            rm_args = ['rm', '-r', path]
+            subprocess.call(rm_args)
 
+
+# links a singular dotfile from 'source' to 'dest', checking for validity
 def link_dotfile(source, dest):
     #TODO: check that the sibprocesses complete properly
     # expand the home directory '~'
@@ -66,10 +74,8 @@ def link_dotfile(source, dest):
     elif os.path.exists(dest):
         # remove file if force flag given
         if G_args.force:
-            #TODO: remove/move/rename file?
-            rm_args = ['rm', '-r', dest]
+            rm_wrapper(dest)
             verbose_print('\trm {}'.format(dest))
-            subprocess.call(rm_args)
         else:
             print('error: cannot create symlink at {}'.format(dest))
             sys.exit()
@@ -108,10 +114,9 @@ def add_path(path, filename, repo_name):
     pass
 
 
-
 # iterates through all repos stored in json file
 def iterate_through_repos(repos):
-    # iterate through dotfile repo
+    # iterate through repos
     for repo in repos:
         verbose_print('repo: ' + repo['location'])
         
@@ -127,7 +132,6 @@ def iterate_through_repos(repos):
                 link_dotfile(link_dir, target_dir)
         
     return 
-
 
 
 
