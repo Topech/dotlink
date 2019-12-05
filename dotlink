@@ -102,16 +102,30 @@ def load_repos_from_json(filename):
     
 
 
+##TODO: implement add_path 
+# adds path to the json file
 def add_path(path, filename, repo_name):
     # load repo
     repos = load_repo_from_json(json_path)
     repo = repos[repo_name]
-    ##TODO: below
-    # add repo to json file
-    ##repo[path] = 
-
+    # add repo to json dict
+    #repo[path] = filename
+    return
     
-    pass
+
+# links all files within a repo
+def link_repo(repo):
+    # iterate through each target location
+    for target in repo['contents']:
+        verbose_print('target: ' + target['directory'])
+        
+        # iterate throgh each file
+        for dotfile in target['files']:
+            
+            link_dir = repo['location'] + dotfile['name']
+            target_dir = target['directory'] + dotfile['name']
+            link_dotfile(link_dir, target_dir)
+    return
 
 
 # iterates through all repos stored in json file
@@ -119,18 +133,7 @@ def iterate_through_repos(repos):
     # iterate through repos
     for repo in repos:
         verbose_print('repo: ' + repo['location'])
-        
-        # iterate through each target location
-        for target in repo['contents']:
-            verbose_print('target: ' + target['directory'])
-            
-            # iterate throgh each file
-            for dotfile in target['files']:
-                
-                link_dir = repo['location'] + dotfile['name']
-                target_dir = target['directory'] + dotfile['name']
-                link_dotfile(link_dir, target_dir)
-        
+        link_repo(repo)
     return 
 
 
