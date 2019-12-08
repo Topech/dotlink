@@ -1,5 +1,9 @@
 #!/usr/bin/python3
 
+
+# globals
+G_args = None
+json_path = 'linkmap.json'
 desc = '''dotlink automates the spreading of dotfiles to new systems and uses 
 links to dotfile repos to make the use of version control easier.'''
 
@@ -11,32 +15,35 @@ import argparse
 import os.path
 
 
-# globals
-G_args = None
-json_path = 'linkmap.json'
-
 def verbose_print(msg):
     if G_args.verbose:
         print(msg)
     return
 
-# get arguments and set flags as necessary
+
+# process cli options and store in G_args
 # -v --verbose
 # -h --help
 # -f --force
+# -a --ask
 #TODO: -l --link [FILE] 
 #TODO: ADD
 #TODO: REMOVE
 #TODO: LIST
-#TODO: CLEAR
 def process_args():
     global G_args
+
+    # help messages: 
+    verbose_help = 'be verbose during execution'
+    force_help   = 'force overriding existing files'
+    ask_help     = 'ask before removing files'
+
     # init parser and add arg opts
     parser = argparse.ArgumentParser(description = desc)
-    parser.add_argument("-v", "--verbose", help='be verbose during execution', action='store_true')
-    parser.add_argument("-f", "--force", help='force overriding existing files', action='store_true')
+    parser.add_argument("-v", "--verbose", help=verbose_help, action='store_true')
+    parser.add_argument("-f", "--force", help=force_help, action='store_true')
+    parser.add_argument("-a", "--ask", help=ask_help, action='store_true')
     #parser.add_argument("-l", "--link", metavar="FILE", nargs='?', help="link the given file to the correct position")
-
     G_args = parser.parse_args()
     return 
 
@@ -53,35 +60,58 @@ def link_wrapper(source, dest):
 
 # calls the rm command to remove the file at 'path' recursively
 def rm_wrapper(path):
-            #TODO: remove/move/rename file?
-            rm_args = ['rm', '-r', path]
-            subprocess.call(rm_args)
+    rm_args = ['rm', '-r', path]
+    subprocess.call(rm_args)
 
+
+# ask to execute rm command
+def ask_to_remove(path):
+    yes = ['y', 'yes', 'Y', 'YES']
+    no = ['n', 'no', 'No', 'NO', 'N']
+    resp = input('remove [{}]? '.format(path))
+    removed = False
+    
+    if resp in yes:
+        rm_wrapper(path) 
+        verbose_print('\trm {}'.format(path))
+        removed = True
+    elif resp not in no:
+        # todo: check this doesn't happen forever
+        ask_to_remove(path)
+    return removed
+    
 
 # links a singular dotfile from 'source' to 'dest', checking for validity
 def link_dotfile(source, dest):
     #TODO: check that the sibprocesses complete properly
+    #TODO: reorganise the structure, too messy
     # expand the home directory '~'
     source = os.path.expanduser(source)
     dest = os.path.expanduser(dest)
 
-    # check if already linked correctly
-    if os.path.islink(dest):
-        #TODO: what do when already link and force?
-        verbose_print('\tlink already at {}'.format(dest))
-        return
+    ok_to_link = False
     # catch any files in the way
-    elif os.path.exists(dest):
+    if os.path.exists(dest):
         # remove file if force flag given
         if G_args.force:
-            rm_wrapper(dest)
-            verbose_print('\trm {}'.format(dest))
+            # check if need to ask
+            if G_args.ask:
+                if ask_to_remove(dest):
+                    ok_to_link = True
+            else:
+                rm_wrapper(dest)
+                verbose_print('\trm {}'.format(dest))
+                ok_to_link = True
         else:
             print('error: cannot create symlink at {}'.format(dest))
             sys.exit()
+    else:
+        ok_to_link = True
 
-    link_wrapper(source, dest)
-    verbose_print('\tlink made from {} to {}'.format(dest, source))
+    if ok_to_link:
+        # just make link if no file or link exists at dest path
+        link_wrapper(source, dest)
+        verbose_print('\tlink made from {} to {}'.format(dest, source))
     return
 
 
