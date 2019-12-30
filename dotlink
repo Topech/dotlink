@@ -1,11 +1,19 @@
 #!/usr/bin/python3
 
 
+desc = '''dotlink automates the spreading of dotfiles to new systems and uses 
+links to dotfile repos to make the use of version control easier.'''
+# Options:
+# -v --verbose
+# -h --help
+# -f --force
+# -a --ask
+
+
+
 # globals
 G_args = None
 json_path = 'linkmap.json'
-desc = '''dotlink automates the spreading of dotfiles to new systems and uses 
-links to dotfile repos to make the use of version control easier.'''
 
 
 import json
@@ -15,17 +23,19 @@ import argparse
 import os.path
 
 
+
+### Helper functions ###
+
+# print msg only if verbose flag is given
 def verbose_print(msg):
     if G_args.verbose:
         print(msg)
     return
 
 
+### User Interface ###
+
 # process cli options and store in G_args
-# -v --verbose
-# -h --help
-# -f --force
-# -a --ask
 #TODO: -l --link [FILE] 
 #TODO: ADD
 #TODO: REMOVE
@@ -48,22 +58,6 @@ def process_args():
     return 
 
 
-
-# calls the link command to make a soft link from 'source' to 'dest'
-# is a wrapper for ln
-def link_wrapper(source, dest):
-    # make symlink 
-    link_args = ['ln', '-s', source, dest]
-    subprocess.call(link_args)
-    return
-    
-
-# calls the rm command to remove the file at 'path' recursively
-def rm_wrapper(path):
-    rm_args = ['rm', '-r', path]
-    subprocess.call(rm_args)
-
-
 # ask to execute rm command
 def ask_to_remove(path):
     yes = ['y', 'yes', 'Y', 'YES']
@@ -81,10 +75,30 @@ def ask_to_remove(path):
     return removed
     
 
+### Command Wrappers ###
+
+# calls the link command to make a soft link from 'source' to 'dest'
+# is a wrapper for ln
+def link_wrapper(source, dest):
+    # make symlink 
+    link_args = ['ln', '-s', source, dest]
+    subprocess.call(link_args)
+    return
+    
+
+# calls the rm command to remove the file at 'path' recursively
+def rm_wrapper(path):
+    rm_args = ['rm', '-r', path]
+    subprocess.call(rm_args)
+
+
+### Linking Functions ###
+
 # links a singular dotfile from 'source' to 'dest', checking for validity
 def link_dotfile(source, dest):
     #TODO: check that the sibprocesses complete properly
     #TODO: reorganise the structure, too messy
+
     # expand the home directory '~'
     source = os.path.expanduser(source)
     dest = os.path.expanduser(dest)
@@ -103,7 +117,7 @@ def link_dotfile(source, dest):
                 verbose_print('\trm {}'.format(dest))
                 ok_to_link = True
         else:
-            print('error: cannot create symlink at {}'.format(dest))
+            print('error: file already at {}'.format(dest))
             sys.exit()
     else:
         ok_to_link = True
@@ -114,34 +128,6 @@ def link_dotfile(source, dest):
         verbose_print('\tlink made from {} to {}'.format(dest, source))
     return
 
-
-# loads the json file into a dictionary
-# fails if cannot read or json is malformed 
-def load_repos_from_json(filename):
-    try:
-        with open(filename, 'r') as json_file:
-            json_obj = json.load(json_file)
-            repos = json_obj['dotdirs']
-    except IOError:
-        print('json file {} doesn\'t exist'.format(filename))
-        sys.exit()
-    except json.JSONDecodeError:
-        print('json file {} is malformed'.format(filename))
-        sys.exit()
-    return repos
-    
-
-
-##TODO: implement add_path 
-# adds path to the json file
-def add_path(path, filename, repo_name):
-    # load repo
-    repos = load_repo_from_json(json_path)
-    repo = repos[repo_name]
-    # add repo to json dict
-    #repo[path] = filename
-    return
-    
 
 # links all files within a repo
 def link_repo(repo):
@@ -159,7 +145,7 @@ def link_repo(repo):
 
 
 # iterates through all repos stored in json file
-def iterate_through_repos(repos):
+def link_all_repos(repos):
     # iterate through repos
     for repo in repos:
         verbose_print('repo: ' + repo['location'])
@@ -167,15 +153,57 @@ def iterate_through_repos(repos):
     return 
 
 
+### JSON File Operations ###
 
+# loads the json file into a dictionary
+# fails if cannot read or json is malformed 
+def load_repos_from_json(filename):
+    try:
+        with open(filename, 'r') as json_file:
+            json_obj = json.load(json_file)
+            repos = json_obj['dotdirs']
+    except IOError:
+        print('error: json file {} doesn\'t exist'.format(filename))
+        sys.exit()
+    except json.JSONDecodeError:
+        print('error: json file {} is malformed'.format(filename))
+        sys.exit()
+    return repos
+    
+
+##TODO: implement add_path 
+# adds path to the json file
+def add_path_to_json(path, filename, repo_name):
+    # load repo
+    repos = load_repos_from_json(json_path)
+    
+    # set repo if can be found
+    repo = None 
+    for r in repos:
+        if r['location'] == repo_name:
+            repo = r
+    if repo == None:
+        print('error: no repo called {}'.format(repo_name))
+
+    # add repo to json dict
+    print(repo)
+    repo_list = repo['contents']
+    # DEBUG return repo for checking
+    return repo
+    
+
+### Main Function ###
 
 def main():
+    add_path_to_json('path_to_file', 'filename', '~/mine/dev/new_dotfiles/')
+
     process_args()
-    repos = load_repos_from_json(json_path)
-    iterate_through_repos(repos) 
+    #repos = load_repos_from_json(json_path)
+    #link_all_repos(repos) 
     return
 
 
-# run main if executed as script
+# run main if executed as script.
+# declares all functions before running main
 if __name__ == '__main__':
     main()
