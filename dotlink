@@ -10,17 +10,19 @@ links to dotfile repos to make the use of version control easier.'''
 # -a --ask
 
 
-
-# globals
-G_args = None
-json_path = 'linkmap.json'
-
-
 import json
 import subprocess
 import sys
 import argparse
-import os.path
+import os
+from pathlib import Path
+
+
+# globals
+G_args = None
+json_path = 'lm.json'
+working_dir = Path.cwd()
+
 
 
 
@@ -37,6 +39,7 @@ def verbose_print(msg):
 
 # process cli options and store in G_args
 #TODO: -l --link [FILE] 
+#TODO: -d --dir 
 #TODO: ADD
 #TODO: REMOVE
 #TODO: LIST
@@ -63,16 +66,14 @@ def ask_to_remove(path):
     yes = ['y', 'yes', 'Y', 'YES']
     no = ['n', 'no', 'No', 'NO', 'N']
     resp = input('remove [{}]? '.format(path))
-    removed = False
-    
+
     if resp in yes:
-        rm_wrapper(path) 
-        verbose_print('\trm {}'.format(path))
-        removed = True
-    elif resp not in no:
-        # todo: check this doesn't happen forever
-        ask_to_remove(path)
-    return removed
+        return True    
+    elif resp in no:
+        return False
+    else:
+        print('error: invalid response')
+        sys.exit()
     
 
 ### Command Wrappers ###
@@ -94,88 +95,103 @@ def rm_wrapper(path):
 
 ### Linking Functions ###
 
-# links a singular dotfile from 'source' to 'dest', checking for validity
-def link_dotfile(source, dest):
-    #TODO: check that the sibprocesses complete properly
-    #TODO: reorganise the structure, too messy
 
-    # expand the home directory '~'
-    source = os.path.expanduser(source)
-    dest = os.path.expanduser(dest)
+def link_dotfile(target, dotfile):
+    
+    target = Path(target).expanduser()
+    dotfile = Path(working_dir / dotfile)
+    
+    # check target and dotfile exist
+    if not target.exists(): 
+        print('eror: ' + str(target) + ' does not exist')
+        sys.exit()
+    elif not dotfile.exists():
+        print('eror: ' + str(dotfile.stem) + ' does not exist')
+        sys.exit()
 
-    ok_to_link = False
-    # catch any files in the way
-    if os.path.exists(dest):
-        # remove file if force flag given
-        if G_args.force:
-            # check if need to ask
+    # location that the dotfile will be placed    
+    dotfile_location = target / dotfile.stem
+
+    if (dotfile_location.exists()):
+        if not G_args.force:
+            # ask if its ok to remove offending file
             if G_args.ask:
-                if ask_to_remove(dest):
-                    ok_to_link = True
-            else:
-                rm_wrapper(dest)
-                verbose_print('\trm {}'.format(dest))
-                ok_to_link = True
-        else:
-            print('error: file already at {}'.format(dest))
-            sys.exit()
-    else:
-        ok_to_link = True
+                ok_to_remove = ask_to_remove(dotfile_location)
+                if ok_to_remove:
+                    rm_wrapper(dotfile_location)
+                    verbose_print('\trm {}'.format(dotfile_location))
 
-    if ok_to_link:
-        # just make link if no file or link exists at dest path
-        link_wrapper(source, dest)
-        verbose_print('\tlink made from {} to {}'.format(dest, source))
+        else: # if forced
+            rm_wrapper(dotfile_location)
+            verbose_print('\trm {}'.format(dotfile_location))
+    else: # if file exists
+        return 
+
+    link_wrapper(dotfile, target)
+    target = str(target)
+    dotfile = str(dotfile.stem)
+    verbose_print('\tlinking {} to {}'.format(dotfile, target))
     return
+          
+
+
+
+# stub used to debug linking
+def link_dotfile_stub(target, dotfile):
+
+    target = Path(target).expanduser()
+    dotfile = Path(working_dir / dotfile)
+    
+    # check target and dotfile exist
+    if not target.exists() or not dotfile.exists():
+        print('eror: target or dotfile does not exist')
+        sys.exit()
+
+    # print the fake link
+    target = str(target)
+    dotfile = dotfile.stem
+    print('\tlinking \'' + dotfile + '\' to ' + target)    
+
+    return
+
 
 
 # links all files within a repo
 def link_repo(repo):
     # iterate through each target location
-    for target in repo['contents']:
-        verbose_print('target: ' + target['directory'])
-        
+    for target in repo:
+        verbose_print('target: ' + target)
+
         # iterate throgh each file
-        for dotfile in target['files']:
-            
-            link_dir = repo['location'] + dotfile['name']
-            target_dir = target['directory'] + dotfile['name']
-            link_dotfile(link_dir, target_dir)
+        for dotfile in repo[target]:
+            #link_dotfile_stub(target, dotfile)
+            link_dotfile(target, dotfile)
     return
 
-
-# iterates through all repos stored in json file
-def link_all_repos(repos):
-    # iterate through repos
-    for repo in repos:
-        verbose_print('repo: ' + repo['location'])
-        link_repo(repo)
-    return 
 
 
 ### JSON File Operations ###
 
 # loads the json file into a dictionary
 # fails if cannot read or json is malformed 
-def load_repos_from_json(filename):
+def load_repo_from_json(filename):
     try:
         with open(filename, 'r') as json_file:
-            json_obj = json.load(json_file)
-            repos = json_obj['dotdirs']
+            repo = json.load(json_file)
     except IOError:
         print('error: json file {} doesn\'t exist'.format(filename))
         sys.exit()
     except json.JSONDecodeError:
         print('error: json file {} is malformed'.format(filename))
         sys.exit()
-    return repos
+    return repo
     
 
-##TODO: implement add_path 
+##TODO: refactor for new layout
 # adds path to the json file
 def add_path_to_json(path, filename, repo_name):
     # load repo
-    repos = load_repos_from_json(json_path)
+    repos = load_repo_from_json(json_path)
     
     # set repo if can be found
     repo = None 
@@ -195,11 +211,10 @@ def add_path_to_json(path, filename, repo_name):
 ### Main Function ###
 
 def main():
-    add_path_to_json('path_to_file', 'filename', '~/mine/dev/new_dotfiles/')
 
     process_args()
-    #repos = load_repos_from_json(json_path)
-    #link_all_repos(repos) 
+    repo = load_repo_from_json(json_path)
+    link_repo(repo)
     return
 
 
