@@ -1,0 +1,13 @@
+{
+    "~": [
+        ".profile",
+        ".bash_aliases",
+        ".bashrc"
+    ],
+    "~/.config": [
+        "herbstluftwm",
+        "Xmodmap",
+        "plank",
+        "polybar"
+    ]
+}
