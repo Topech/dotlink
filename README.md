@@ -4,8 +4,9 @@ Dotlink allows the automation of deploying dotfiles to their desired locations o
 You can use dotlink to link whole directories as well (for example `~/.config/i3/`) so that all changes within that directory are present in the dotfile repo. 
 
 ## Linkmap
-The heart of the program is the linkmap file. This is a repo-specific configuration file that dictates where each dotfile is to be linked (it's target directory). This is to be placed in a traditional dotfile repo. Currently this file must be named lm.json but this should be fixed soon.
+The heart of the program is the linkmap file. This is a repo-specific configuration file that dictates where each dotfile is to be linked (it's target directory). This is to be placed in a traditional dotfile repo. Currently this file must be named lm.json but this should be fixed soon. There is a template linkmap appropriately named `template.linkmap` that you can check out if you feel liek writing it yourself instead of using the add command.
 
+Note that the link map will expand '~' so that your dotfiles can be exported between users. 
 ## Program Flags
 ```
 optional arguments:
