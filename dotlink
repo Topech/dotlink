@@ -128,7 +128,7 @@ def link_dotfile(target, dotfile):
         sys.exit()
 
     # location that the dotfile will be placed    
-    dotfile_location = target / dotfile.stem
+    dotfile_location = target / dotfile.name
 
     if (dotfile_location.exists()):
         if not G_args.force:
@@ -144,35 +144,14 @@ def link_dotfile(target, dotfile):
         else: # if forced
             rm_wrapper(dotfile_location)
             verbose_print('\trm {}'.format(dotfile_location))
-    else: # if file exists
-        return 
 
+    # link the dotfile
     link_wrapper(dotfile, target)
     target = str(target)
     dotfile = str(dotfile.stem)
     verbose_print('\tlinking {} to {}'.format(dotfile, target))
     return
           
-
-
-
-# stub used to debug linking
-def link_dotfile_stub(target, dotfile):
-
-    target = Path(target).expanduser()
-    dotfile = Path(repo_dir / dotfile)
-    
-    # check target and dotfile exist
-    if not target.exists() or not dotfile.exists():
-        print('error: target or dotfile does not exist')
-        sys.exit()
-
-    # print the fake link
-    target = str(target)
-    dotfile = dotfile.stem
-    print('\tlinking \'' + dotfile + '\' to ' + target)    
-
-    return
 
 
 
@@ -184,7 +163,7 @@ def link_repo(repo):
 
         # iterate through each file
         for dotfile in repo[target]:
-            #link_dotfile_stub(target, dotfile)
+            verbose_print('\tdf: '+ dotfile)
             link_dotfile(target, dotfile)
     return
 
@@ -256,6 +235,14 @@ def compressuser(string):
 
 
 
+def print_repo(repo):
+    for target in repo:
+        print(target)
+        for df in repo[target]:
+            print("\t" + df)
+    return
+
+
 ### Main Function ###
 
 def main():
@@ -266,6 +253,8 @@ def main():
         for dotfile in G_args.add:
             add_dotfile_to_json(dotfile, target=working_dir)
     else:
+        verbose_print('repo = ' + str(repo_dir))
+        verbose_print('linkmap = ' + str(json_path))
         repo = load_repo_from_json(json_path)
         link_repo(repo)
     return
