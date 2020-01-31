@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 
 
-desc = '''dotlink automates the spreading of dotfiles to new systems and uses 
-links to dotfile repos to make the use of version control easier.'''
+desc = '''Dotlink allows the automation of deploying dotfiles to their desired 
+ locations on linux systems. It takes advantage of file symlinks to easily keep
+ track of changes to files in your dotfiles repository.
+'''
 # Options:
 # -v --verbose
 # -h --help
@@ -81,7 +83,7 @@ def process_args():
 def ask_to_remove(path):
     yes = ['y', 'yes', 'Y', 'YES']
     no = ['n', 'no', 'No', 'NO', 'N']
-    resp = input('remove [{}]? '.format(path))
+    resp = input('\tremove [{}]? '.format(path))
 
     if resp in yes:
         return True    
@@ -136,6 +138,8 @@ def link_dotfile(target, dotfile):
                 if ok_to_remove:
                     rm_wrapper(dotfile_location)
                     verbose_print('\trm {}'.format(dotfile_location))
+                else:
+                    return
 
         else: # if forced
             rm_wrapper(dotfile_location)
