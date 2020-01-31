@@ -20,8 +20,9 @@ from pathlib import Path
 
 # globals
 G_args = None
-json_path = 'lm.json'
 working_dir = Path.cwd()
+repo_dir = working_dir
+json_path = repo_dir / Path('lm.json')
 
 
 
@@ -45,19 +46,34 @@ def verbose_print(msg):
 #TODO: LIST
 def process_args():
     global G_args
+    global repo_dir
+    global json_path
 
     # help messages: 
-    verbose_help = 'be verbose during execution'
-    force_help   = 'force overriding existing files'
-    ask_help     = 'ask before removing files'
+    verbose_help     = 'be verbose during execution'
+    force_help       = 'force overriding existing files'
+    interactive_help = 'ask before removing files'
+    command_help     = 'what command to execute'
+    repo_help        = 'specify a path to the repo holding the dotfiles'
+    add_help         = 'add FILE(s) to dotlink'
 
     # init parser and add arg opts
     parser = argparse.ArgumentParser(description = desc)
     parser.add_argument("-v", "--verbose", help=verbose_help, action='store_true')
     parser.add_argument("-f", "--force", help=force_help, action='store_true')
-    parser.add_argument("-a", "--ask", help=ask_help, action='store_true')
+    parser.add_argument("-i", "--interactive", help=interactive_help, action='store_true')
+    parser.add_argument("-r", "--repo", help=repo_help, nargs=1, metavar='DIR')
     #parser.add_argument("-l", "--link", metavar="FILE", nargs='?', help="link the given file to the correct position")
+    parser.add_argument("-a", "--add", help=add_help, nargs='+', metavar='FILE')
     G_args = parser.parse_args()
+
+    # set repo path
+    if G_args.repo != None:
+        new_repo = G_args.repo[0]
+        verbose_print('changing repo dir to \'' + str(new_repo) + '\'')
+        repo_dir = Path(new_repo)
+        json_path = repo_dir / Path('lm.json')
+
     return 
 
 
@@ -99,14 +115,14 @@ def rm_wrapper(path):
 def link_dotfile(target, dotfile):
     
     target = Path(target).expanduser()
-    dotfile = Path(working_dir / dotfile)
+    dotfile = Path(repo_dir / dotfile)
     
     # check target and dotfile exist
     if not target.exists(): 
-        print('eror: ' + str(target) + ' does not exist')
+        print('error: ' + str(target) + ' does not exist')
         sys.exit()
     elif not dotfile.exists():
-        print('eror: ' + str(dotfile.stem) + ' does not exist')
+        print('error: ' + str(dotfile.stem) + ' does not exist')
         sys.exit()
 
     # location that the dotfile will be placed    
@@ -115,7 +131,7 @@ def link_dotfile(target, dotfile):
     if (dotfile_location.exists()):
         if not G_args.force:
             # ask if its ok to remove offending file
-            if G_args.ask:
+            if G_args.interactive:
                 ok_to_remove = ask_to_remove(dotfile_location)
                 if ok_to_remove:
                     rm_wrapper(dotfile_location)
@@ -140,11 +156,11 @@ def link_dotfile(target, dotfile):
 def link_dotfile_stub(target, dotfile):
 
     target = Path(target).expanduser()
-    dotfile = Path(working_dir / dotfile)
+    dotfile = Path(repo_dir / dotfile)
     
     # check target and dotfile exist
     if not target.exists() or not dotfile.exists():
-        print('eror: target or dotfile does not exist')
+        print('error: target or dotfile does not exist')
         sys.exit()
 
     # print the fake link
@@ -162,7 +178,7 @@ def link_repo(repo):
     for target in repo:
         verbose_print('target: ' + target)
 
-        # iterate throgh each file
+        # iterate through each file
         for dotfile in repo[target]:
             #link_dotfile_stub(target, dotfile)
             link_dotfile(target, dotfile)
@@ -172,8 +188,10 @@ def link_repo(repo):
 
 ### JSON File Operations ###
 
-# loads the json file into a dictionary
-# fails if cannot read or json is malformed 
+##
+# loads the json file into a dictionary. fails if cannot read or json
+#  is malformed 
+##
 def load_repo_from_json(filename):
     try:
         with open(filename, 'r') as json_file:
@@ -187,34 +205,65 @@ def load_repo_from_json(filename):
     return repo
     
 
-##TODO: refactor for new layout
-# adds path to the json file
-def add_path_to_json(path, filename, repo_name):
-    # load repo
-    repos = load_repo_from_json(json_path)
-    
-    # set repo if can be found
-    repo = None 
-    for r in repos:
-        if r['location'] == repo_name:
-            repo = r
-    if repo == None:
-        print('error: no repo called {}'.format(repo_name))
 
-    # add repo to json dict
-    print(repo)
-    repo_list = repo['contents']
-    # DEBUG return repo for checking
+## 
+# adds a dotfile to the json configuration file. This function can
+# optionally be given a target directory to force dotlink to link
+# 'dotfile' to a specific directory. If no target is specified, 
+# dot file will be linked to the current working directory.
+#
+# TODO: automatically copy contents to repo?
+##
+def add_dotfile_to_json(dotfile, target=None):
+
+    repo = load_repo_from_json(json_path)
+    
+    # set target if not specified
+    if target == None:
+        target = working_dir
+
+    # compress user dir if present (helps with porting between users)
+    target = compressuser(str(target))
+
+    if target in repo:
+        if dotfile not in repo[target]:
+            repo[target].append(dotfile)
+            verbose_print('\'' + dotfile + '\' added to repo')
+        else:
+            verbose_print('\'' + dotfile + '\' is already in repo') 
+    else:
+        # init a list in target
+        repo[target] = [dotfile]
+        verbose_print('\'' + dotfile + '\' added to repo at new target dir')
+
+    # TODO: check it actually saved with no errors
+    
+    # save repo as json in json_path
+    with open(json_path, 'w') as fp:
+        json.dump(repo, fp, indent=4)   
+
     return repo
     
+
+
+def compressuser(string):   
+    home = str(Path.home())
+    return string.replace(home, '~')
+
+
 
 ### Main Function ###
 
 def main():
 
     process_args()
-    repo = load_repo_from_json(json_path)
-    link_repo(repo)
+
+    if G_args.add != None:
+        for dotfile in G_args.add:
+            add_dotfile_to_json(dotfile, target=working_dir)
+    else:
+        repo = load_repo_from_json(json_path)
+        link_repo(repo)
     return
 
 
