@@ -130,17 +130,20 @@ def link_dotfile(target, dotfile):
     # location that the dotfile will be placed    
     dotfile_location = target / dotfile.name
 
+    # for existing files :delete if forced to or user specified to when asked, 
+    # skip linking otherwise
     if (dotfile_location.exists()):
         if not G_args.force:
-            # ask if its ok to remove offending file
             if G_args.interactive:
                 ok_to_remove = ask_to_remove(dotfile_location)
                 if ok_to_remove:
                     rm_wrapper(dotfile_location)
                     verbose_print('\trm {}'.format(dotfile_location))
-                else:
+                else: 
                     return
-
+            else: # not interactive
+                verbose_print('\'' + str(dotfile_location) +'\' exists already')
+                return
         else: # if forced
             rm_wrapper(dotfile_location)
             verbose_print('\trm {}'.format(dotfile_location))
