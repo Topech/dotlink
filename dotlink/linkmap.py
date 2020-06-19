@@ -2,7 +2,7 @@
 # linkmap.py
 ##
 
-
+import pathlib
 
 ##
 # Class that abstracts a linkmap that can be used to link dotfiles throughout a system.
@@ -12,10 +12,10 @@ class LinkMap:
 
 
     def __init__(self, filename):
-        self.filename = path(filename)
+        self.filename = pathlib.Path(filename)
 
         # ensure file is valid
-        if self.filename.is_file():
+        if not self.filename.is_file():
             raise FileNotFoundError("linkmap is not a valid file")
 
 

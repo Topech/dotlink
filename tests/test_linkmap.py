@@ -11,14 +11,20 @@ class TestLinkMap(unittest.TestCase):
 
 
     def setUp(self):
-        pass
+        self.filename = 'tests/resources/test.linkmap'
 
+
+    def test_constructor(self):
+
+       with self.assertRaises(FileNotFoundError, msg='invalid linkmap name not detected by LinkMap constructor'):
+            linkmap = LinkMap("fake-linkmap-filename")
+        
 
     def test_load(self):
 
         # asserts
         # - load == preset map object
-        # - dotfiles == all in mapfile were detected and inited
+        # - dotfiles == all in mapfile were detected and initted
         # - targets == correct targets
         pass
 
