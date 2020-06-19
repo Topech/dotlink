@@ -19,7 +19,7 @@ class Dotfile:
         self.repo = pathlib.Path(repo)
 
         # check if given files are valid
-        if not self.desired_path.exists():
+        if not self.desired_path.is_file():
             raise FileNotFoundError("the dotfile could not be found")
 
         if not self.repo.is_dir():
