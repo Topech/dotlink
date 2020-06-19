@@ -7,4 +7,5 @@ init:
 	pip install -r requirements.txt
 
 test:
-	python3 -m unittest tests/test_dotlink.py
+	python3 -m unittest tests/test_dotfile.py
+	python3 -m unittest tests/test_linkmap.py
