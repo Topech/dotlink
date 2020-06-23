@@ -3,48 +3,53 @@
 ##
 
 import pathlib
+import json
 
-##
-# Class that abstracts a linkmap that can be used to link dotfiles throughout a system.
+
+
 class LinkMap:
-    filename = ""
+    """
+    Class for abstracting a linkmap file. Can be used to load or save linkmap files.
+
+    A linkmap is a collection of desitinations, each of which have a collection of dotfiles. 
+    """
+
+
     linkmap_dict  = dict()
 
 
-    def __init__(self, filename):
-        self.filename = pathlib.Path(filename)
 
-        # ensure file is valid
-        if not self.filename.is_file():
-            raise FileNotFoundError("linkmap is not a valid file")
+    def load_json(self, filename):
+        """
+        loads the json file into a dictionary. fails if cannot read or json
+        is malformed
+        """
 
+        # read the file given and store it as a linkmap. catch any exceptions and print more helpful 
+        # error messages.
+        try:
+            with open(filename, 'r') as json_file:
+                json_map = json.load(json_file)
+        except IOError:
+            print('error: json file {} doesn\'t exist or cannot be accessed'.format(filename))
+            sys.exit()
+        except json.JSONDecodeError:
+            print('error: json file {} is malformed'.format(filename))
+            sys.exit()
 
-    def load():
-        print('load file stub!')
+        self.linkmap_dict = json_map 
+        
+    
 
-    def save():
+    def save_json(self, filename):
+        """
+        save the linkmap contained in linkmap_dict as a json file called `filename`
+        """
         pass
 
 
 
 
-
-##
-# loads the json file into a dictionary. fails if cannot read or json
-#  is malformed 
-##
-def load_repo_from_json(filename):
-    try:
-        with open(filename, 'r') as json_file:
-            repo = json.load(json_file)
-    except IOError:
-        print('error: json file {} doesn\'t exist'.format(filename))
-        sys.exit()
-    except json.JSONDecodeError:
-        print('error: json file {} is malformed'.format(filename))
-        sys.exit()
-    return repo
-    
 
 
 ## 
@@ -89,4 +94,4 @@ def add_dotfile_to_json(dotfile, target=None):
 
 def compressuser(string):   
     home = str(Path.home())
-    return string.replace(home, '~')
+    r
