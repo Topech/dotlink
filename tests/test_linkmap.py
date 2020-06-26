@@ -30,7 +30,7 @@ class TestLinkMap(unittest.TestCase):
         linkmap.load_json(self.filepath)
 
 
-        # check file not deleted or no longer accessible (ulikley)
+        # check file not deleted or no longer accessible (unlikely)
         file_still_exists = self.filepath.exists()
         self.assertTrue(file_still_exists, msg='linkmap deleted after using the load method.')
 
@@ -41,11 +41,11 @@ class TestLinkMap(unittest.TestCase):
 
         # all dotfiles in mapfile were captured (non-repeating)
         testfile_dotfiles = ['linkmap_test_a', 'linkmap_test_b', 'linkmap_test_c']
-        self.assertEqual(linkmap.linkmap_dict['~'], testfile_dotfiles)
+        self.assertEqual(linkmap._linkmap_dict['~'], testfile_dotfiles)
 
         # all destinations detected (only 1)
         testfile_destinations = ['~']
-        linkmap_destinations = list(linkmap.linkmap_dict.keys())
+        linkmap_destinations = list(linkmap._linkmap_dict.keys())
         self.assertEqual(linkmap_destinations, testfile_destinations)
     
 

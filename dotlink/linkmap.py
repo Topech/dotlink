@@ -4,6 +4,7 @@
 
 import pathlib
 import json
+from dotlink.dotfile import Dotfile
 
 
 
@@ -15,7 +16,14 @@ class LinkMap:
     """
 
 
-    linkmap_dict  = dict()
+    _linkmap_dict  = dict()
+        # a dictionary is used to store the map as it provides a convienent way of storing dotfiles
+        # by destination and allows for indexing by strings.
+
+    
+    _map_loaded = False
+        # this boolean flag stops the class entering an erroneous state where it attempts to link
+        # dotfiles from a map that has not been loaded. 
 
 
 
@@ -37,16 +45,76 @@ class LinkMap:
             print('error: json file {} is malformed'.format(filename))
             sys.exit()
 
-        self.linkmap_dict = json_map 
-        
+
+        # convert json_map elements from strings to objects
+        for dest in json_map:
+            dest_path = pathlib.Path(dest)
+            print(dest_path.expanduser())
+
+            self._linkmap_dict[dest_path] = []
+            for filepath in json_map[dest]:
+                dotfile = Dotfile(filepath)
+
+                self.add_to_destination(dotfile, dest_path)
+
+            print(self._linkmap_dict[dest_path])
+
+        self._map_loaded = True
     
+
 
     def save_json(self, filename):
         """
-        save the linkmap contained in linkmap_dict as a json file called `filename`
+        save the linkmap contained in _linkmap_dict as a json file called `filename`
         """
         pass
 
+
+    def add_to_destination(self, dotfile, destination):
+        """
+        add a dotfile to a destination in the linkmap
+        """
+    
+        dest_path = pathlib.Path(destination)
+    
+        self._linkmap_dict[dest_path].append(dotfile)
+
+
+
+    def _link_dotfile(self, dotfile, destination):
+        """
+        link a given dotfile to a specified destination in the filesystem.
+        """
+
+        if (self._map_loaded == False):
+            # TODO: fail if map has not been loaded
+            pass    
+
+        # pre conditions:
+        # - dotfile is of type Dotfile
+        # - destination is of type Path
+        # - destination exists and is a directory
+        # - destination does not contain file with name of dotfile
+
+
+        # post condidtions:
+        # - dotfile is linked in destination
+
+
+
+    def link_all_dotfiles(self):
+        """
+        links all dotfiles in a linkmap to their respective destinations.
+        """
+
+        if (self._map_loaded == False):
+            # TODO: fail if map has not been loaded
+            pass
+
+
+        for dest in self._linkmap_dict:
+            # iterate through each dotfile and link each one
+            pass           
 
 
 
@@ -93,5 +161,5 @@ def add_dotfile_to_json(dotfile, target=None):
 
 
 def compressuser(string):   
-    home = str(Path.home())
+    home = str(pathlib.Path.home())
     r
