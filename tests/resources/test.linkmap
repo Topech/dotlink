@@ -1,7 +1,7 @@
 {
     "~": [
-        "linkmap_test_a",
-        "linkmap_test_b",
-        "linkmap_test_c"
+        "tests/resources/linkmap_test_a",
+        "tests/resources/linkmap_test_b",
+        "tests/resources/linkmap_test_c"
     ]
 }
