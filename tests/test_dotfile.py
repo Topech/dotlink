@@ -20,17 +20,13 @@ class TestDotfile(unittest.TestCase):
     def test_constructor(self):
 
         # run constructor with valid file paths, exception will raise if wrong
-        Dotfile(self.dotfile_path, self.test_repo)        
+        Dotfile(self.dotfile_path)        
 
 
         # ensure invalid dotfiles are caught
         with self.assertRaises(FileNotFoundError, msg='non-existant dotfile path not detected by Dotfile constructor'):
-           Dotfile("FAKE-DOTFILE-PATH", self.test_repo)
+           Dotfile("FAKE-DOTFILE-PATH")
         
-
-        # ensure invalid repos are caught
-        with self.assertRaises(NotADirectoryError, msg='non-existant repo not detected by Dotfile constructor'):
-           Dotfile(self.dotfile_path, "FAKE-REPO")
 
         # asserts:
         # - file does exist == true
@@ -40,7 +36,7 @@ class TestDotfile(unittest.TestCase):
 
     def test_is_linked(self):
 
-        dotfile = Dotfile(self.dotfile_path, self.test_repo)        
+        dotfile = Dotfile(self.dotfile_path)        
                 
 
         # asserts
