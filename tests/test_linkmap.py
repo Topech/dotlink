@@ -3,6 +3,7 @@ import unittest
 # use context to access dotlink 
 from .context import dotlink
 from dotlink import LinkMap
+from dotlink import Dotfile
 import hashlib
 from pathlib import Path
 
@@ -14,7 +15,8 @@ class TestLinkMap(unittest.TestCase):
 
     def setUp(self):
         self.filepath = Path('tests/resources/test.linkmap')
-
+        self.dest_path = Path('~')
+        
 
 
     def test_load_json(self):
@@ -40,11 +42,15 @@ class TestLinkMap(unittest.TestCase):
         self.assertEqual(hash_before, hash_after)
 
         # all dotfiles in mapfile were captured (non-repeating)
-        testfile_dotfiles = ['linkmap_test_a', 'linkmap_test_b', 'linkmap_test_c']
-        self.assertEqual(linkmap._linkmap_dict['~'], testfile_dotfiles)
+        # TODO: make more accurate
+        testfile_dotfiles = [ Dotfile('tests/resources/' + s) for s in ['linkmap_test_a', 'linkmap_test_b', 'linkmap_test_c'] ]
+            # attempt to make a list of dotfile objects the same as that in the linkmap file
+
+        self.assertEqual(testfile_dotfiles, linkmap._linkmap_dict[self.dest_path], msg='incorrect dotfiles extracted from mapfile')
+
 
         # all destinations detected (only 1)
-        testfile_destinations = ['~']
+        testfile_destinations = [self.dest_path]
         linkmap_destinations = list(linkmap._linkmap_dict.keys())
         self.assertEqual(linkmap_destinations, testfile_destinations)
     
