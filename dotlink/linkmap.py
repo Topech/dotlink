@@ -49,15 +49,15 @@ class LinkMap:
         # convert json_map elements from strings to objects
         for dest in json_map:
             dest_path = pathlib.Path(dest)
-            print(dest_path.expanduser())
 
+            # make an empty list for each destination and append dotfile objects to it
             self._linkmap_dict[dest_path] = []
+
             for filepath in json_map[dest]:
                 dotfile = Dotfile(filepath)
 
                 self.add_to_destination(dotfile, dest_path)
 
-            print(self._linkmap_dict[dest_path])
 
         self._map_loaded = True
     
