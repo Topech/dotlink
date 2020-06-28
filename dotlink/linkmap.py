@@ -100,6 +100,13 @@ class LinkMap:
         # - destination exists and is a directory
         # - destination does not contain file with name of dotfile
 
+        dotfile_str = dotfile.path.as_posix() 
+        dest_str = pathlib.Path(destination).expanduser().as_posix()
+
+        command = "ln -s {} {}". format(dotfile_str, dest_str)
+
+        print(command)
+        #os.system(command)
 
         # post condidtions:
         # - dotfile is linked in destination
@@ -122,6 +129,10 @@ class LinkMap:
 
 
 
+
+
+
+########### Deprecieated code - needs to be converted to save_json
 
 
 ## 

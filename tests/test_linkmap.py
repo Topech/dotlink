@@ -66,6 +66,22 @@ class TestLinkMap(unittest.TestCase):
 
 
 
+    def test__link_dotfile(self):
+        
+        # set up linkmap file
+        linkmap = LinkMap()
+        linkmap.load_json(self.filepath)
+
+        dotfile_path = 'tests/resources/linkmap_test_a'
+        destination_path = Path('~')
+
+        linkmap._link_dotfile(Dotfile(dotfile_path), destination_path)
+
+        print('testing _link_dotfile()')
+
+        
+
+
     def test_save(self):
 
         # asserts
