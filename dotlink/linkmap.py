@@ -12,12 +12,12 @@ class LinkMap:
     """
     Class for abstracting a linkmap file. Can be used to load or save linkmap files.
 
-    A linkmap is a collection of desitinations, each of which have a collection of dotfiles. 
+    A linkmap is a collection of destinations, each of which have a collection of dotfiles. 
     """
 
 
     _linkmap_dict  = dict()
-        # a dictionary is used to store the map as it provides a convienent way of storing dotfiles
+        # a dictionary is used to store the map as it provides a convenient way of storing dotfiles
         # by destination and allows for indexing by strings.
 
     
@@ -48,7 +48,11 @@ class LinkMap:
 
         # convert json_map elements from strings to objects
         for dest in json_map:
-            dest_path = pathlib.Path(dest)
+            dest_path = pathlib.Path(dest).expanduser()
+    
+            # check for invalid paths
+            if not dest_path.is_dir():
+                raise NotADirectoryError("destination path '{}' is not a directory or does not exist.". format(dest))
 
             # make an empty list for each destination and append dotfile objects to it
             self._linkmap_dict[dest_path] = []

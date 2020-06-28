@@ -25,34 +25,34 @@ class TestLinkMap(unittest.TestCase):
 
         # get hash of file before calling the load method to ensure the file is not changed by the method. 
         # TODO get working
-        hash_before = 1 #hashlib.md5(self.filepath)
-
+        expected_hash = 1 #hashlib.md5(self.filepath)
 
         # run the load_json method and test post-conditions
         linkmap.load_json(self.filepath)
 
+        # check hashes before and after are same (check for changed mapfile, unlikely)
+        # TODO get working
+        actual_hash = 1 #hashlib.md5(self.filepath)
+        self.assertEqual(expected_hash, actual_hash)
 
         # check file not deleted or no longer accessible (unlikely)
         file_still_exists = self.filepath.exists()
         self.assertTrue(file_still_exists, msg='linkmap deleted after using the load method.')
 
-        # check hashes before and after are same (check for changed mapfile, unlikely)
-        # TODO get working
-        hash_after = 1 #hashlib.md5(self.filepath)
-        self.assertEqual(hash_before, hash_after)
-
         # all dotfiles in mapfile were captured (non-repeating)
-        # TODO: make more accurate
-        testfile_dotfiles = [ Dotfile('tests/resources/' + s) for s in ['linkmap_test_a', 'linkmap_test_b', 'linkmap_test_c'] ]
-            # attempt to make a list of dotfile objects the same as that in the linkmap file
+        expected_dotfiles = [ Dotfile('tests/resources/' + s) for s in ['linkmap_test_a', 'linkmap_test_b', 'linkmap_test_c'] ]
+            # list of dotfiles that should be extracted from linkmap
 
-        self.assertEqual(testfile_dotfiles, linkmap._linkmap_dict[self.dest_path], msg='incorrect dotfiles extracted from mapfile')
+        actual_dotfiles = linkmap._linkmap_dict[self.dest_path.expanduser()]
+            # list of dotfiles that were extracted
+
+        self.assertEqual(expected_dotfiles, actual_dotfiles, msg='incorrect dotfiles extracted from mapfile')
 
 
         # all destinations detected (only 1)
-        testfile_destinations = [self.dest_path]
-        linkmap_destinations = list(linkmap._linkmap_dict.keys())
-        self.assertEqual(linkmap_destinations, testfile_destinations)
+        expected_destinations = [self.dest_path.expanduser()]
+        actual_destinations = list(linkmap._linkmap_dict.keys())
+        self.assertEqual(expected_destinations, actual_destinations, msg='some destinations not detected')
     
 
 
