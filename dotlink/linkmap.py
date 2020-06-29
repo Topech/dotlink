@@ -4,6 +4,7 @@
 
 import pathlib
 import json
+import os
 from dotlink.dotfile import Dotfile
 
 
@@ -100,13 +101,13 @@ class LinkMap:
         # - destination exists and is a directory
         # - destination does not contain file with name of dotfile
 
+        # convert dotfile and destination to a link command
         dotfile_str = dotfile.path.as_posix() 
         dest_str = pathlib.Path(destination).expanduser().as_posix()
-
         command = "ln -s {} {}". format(dotfile_str, dest_str)
 
-        print(command)
-        #os.system(command)
+        # run link command
+        os.system(command)
 
         # post condidtions:
         # - dotfile is linked in destination
@@ -123,9 +124,11 @@ class LinkMap:
             pass
 
 
+        # iterate through each destination and link its respective dotfile
         for dest in self._linkmap_dict:
-            # iterate through each dotfile and link each one
-            pass           
+            for dotfile in self._linkmap_dict[dest]:
+                self._link_dotfile(dotfile, dest)
+                
 
 
 

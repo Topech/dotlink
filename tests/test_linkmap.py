@@ -4,8 +4,10 @@ import unittest
 from .context import dotlink
 from dotlink import LinkMap
 from dotlink import Dotfile
-import hashlib
 from pathlib import Path
+import hashlib
+import os
+
 
 
 
@@ -14,48 +16,49 @@ class TestLinkMap(unittest.TestCase):
 
 
     def setUp(self):
-        self.filepath = Path('tests/resources/test.linkmap')
-        self.dest_path = Path('~')
+
+        ## Get Linkmap for testing
         
+        self.linkmap_path = Path('tests/resources/test.linkmap')
+
+        # get hash of file before calling the load method to ensure the file is not changed by the method. 
+        # TODO get working
+        self.expected_hash = 1 #hashlib.md5(self.linkmap_path)
+
+        # extract linkmap from file 
+        self.linkmap = LinkMap()
+        self.linkmap.load_json(self.linkmap_path)
+
+        # expected values to be extracted from the linkmap
+        self.expected_dotfiles = [ Dotfile('tests/resources/' + s) for s in ['linkmap_test_a', 'linkmap_test_b', 'linkmap_test_c'] ]
+        self.expected_destinations = [Path('~').expanduser()]
+
+
+        ## calculate links that should be made given dotfiles and destinations
+
+        self.expected_link = Path(self.expected_destinations[0]).joinpath(self.expected_dotfiles[0].name)
+
 
 
     def test_load_json(self):
           
-        linkmap = LinkMap()
-
-        # get hash of file before calling the load method to ensure the file is not changed by the method. 
+        ## check hashes before and after are same (check for changed mapfile, unlikely)
         # TODO get working
-        expected_hash = 1 #hashlib.md5(self.filepath)
+        actual_hash = 1 #hashlib.md5(self.linkmap_path)
+        self.assertEqual(self.expected_hash, actual_hash)
 
-        # run the load_json method and test post-conditions
-        linkmap.load_json(self.filepath)
-
-        # check hashes before and after are same (check for changed mapfile, unlikely)
-        # TODO get working
-        actual_hash = 1 #hashlib.md5(self.filepath)
-        self.assertEqual(expected_hash, actual_hash)
-
-        # check file not deleted or no longer accessible (unlikely)
-        file_still_exists = self.filepath.exists()
+        ## check file not deleted or no longer accessible (unlikely)
+        file_still_exists = self.linkmap_path.exists()
         self.assertTrue(file_still_exists, msg='linkmap deleted after using the load method.')
 
-        # all dotfiles in mapfile were captured (non-repeating)
-        expected_dotfiles = [ Dotfile('tests/resources/' + s) for s in ['linkmap_test_a', 'linkmap_test_b', 'linkmap_test_c'] ]
-            # list of dotfiles that should be extracted from linkmap
+        ## Check dotfiles extracted are correct
+        actual_dotfiles = self.linkmap._linkmap_dict[self.expected_destinations[0].expanduser()]
+        self.assertEqual(self.expected_dotfiles, actual_dotfiles, msg='some or all dotfiles were not extracted or parsed properly.')
 
-        actual_dotfiles = linkmap._linkmap_dict[self.dest_path.expanduser()]
-            # list of dotfiles that were extracted
-
-        self.assertEqual(expected_dotfiles, actual_dotfiles, msg='incorrect dotfiles extracted from mapfile')
-
-
-        # all destinations detected (only 1)
-        expected_destinations = [self.dest_path.expanduser()]
-        actual_destinations = list(linkmap._linkmap_dict.keys())
-        self.assertEqual(expected_destinations, actual_destinations, msg='some destinations not detected')
+        ## Check all destinations detected (linkmap only has 1)
+        actual_destinations = list(self.linkmap._linkmap_dict.keys())
+        self.assertEqual(self.expected_destinations, actual_destinations, msg='some or all destinations not extracted or parsed properly.')
     
-
-
         # FUTURE asserts
         # - dotfiles same name in same dest (repeating)
         # - no dotfiles in dest == empty list for dofile collection
@@ -68,16 +71,17 @@ class TestLinkMap(unittest.TestCase):
 
     def test__link_dotfile(self):
         
-        # set up linkmap file
-        linkmap = LinkMap()
-        linkmap.load_json(self.filepath)
+        dotfile = self.expected_dotfiles[0]
+        dest = self.expected_destinations[0]
 
-        dotfile_path = 'tests/resources/linkmap_test_a'
-        destination_path = Path('~')
+        self.linkmap._link_dotfile(dotfile, dest)
 
-        linkmap._link_dotfile(Dotfile(dotfile_path), destination_path)
+        ## check that link has been made
+        self.assertTrue(self.expected_link.is_symlink())
 
-        print('testing _link_dotfile()')
+        ## delete linked file to avoid clutter
+        if self.expected_link.is_symlink():
+            os.system('rm {}'.format(self.expected_link.as_posix()))
 
         
 
