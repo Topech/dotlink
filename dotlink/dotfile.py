@@ -13,7 +13,7 @@ class Dotfile:
     # TODO: name variable better
     name = None
     path = None
-    targets = dict()
+    targets = {}
     
 
     def __init__(self, file_path):
@@ -41,12 +41,18 @@ class Dotfile:
         """
         from dotlink import Target
 
-        if self.targets[target.name] == None:
-            self.targets[target.name] = target
+        # detect any incorrect target by type
+        if not isinstance(target, Target):
+            error_msg = "{} is not of type Target"
+            raise TypeError(error_msg)
+
+        # add target to dotfile
+        if not target.string in self.targets:
+            self.targets[target.string] = target
         else:
             # it is expected that a target is only added to a dotlink if it is not already there.
-            error_msg = "Dotfile Error: a duplicate target {} is attempted to be added to {}".format(target, self) 
-            raise Exception(error_msg)
+            error_msg = "a duplicate target {} is attempted to be added to {}".format(target, self) 
+            raise ValueError(error_msg)
         
         
 

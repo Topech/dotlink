@@ -10,4 +10,5 @@ init:
 test:
 	python -m unittest tests/test_dotfile.py
 	python -m unittest tests/test_target.py
+	python -m unittest tests/test_integration_dotfile_target.py
 	#python -m unittest tests/test_linkmap.py
