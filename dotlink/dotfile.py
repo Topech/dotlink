@@ -13,20 +13,42 @@ class Dotfile:
     # TODO: name variable better
     name = None
     path = None
+    targets = dict()
     
 
-    def __init__(self, path):
+    def __init__(self, file_path):
         """
         set path to dotfile 
         """
+        
+        # detect incorrect file_path type
+        if not isinstance(file_path, pathlib.Path):
+            raise TypeError("the given file_path is not a path type.")
 
-        self.path = pathlib.Path(path)
-        self.name = self.path.name
-
-        # check if given files are valid
-        if not self.path.is_file():
+        # check if given dotfile path is valid (there is a file there)
+        if not file_path.is_file():
             raise FileNotFoundError("the dotfile could not be found")
+        else:
+            self.name = file_path.name
+            self.path = pathlib.Path(file_path)
 
+
+
+    def add_target(self, target):
+        """
+        adds a target to the dotfile. This will be used to get all targets
+        related to a dotfile.
+        """
+        from dotlink import Target
+
+        if self.targets[target.name] == None:
+            self.targets[target.name] = target
+        else:
+            # it is expected that a target is only added to a dotlink if it is not already there.
+            error_msg = "Dotfile Error: a duplicate target {} is attempted to be added to {}".format(target, self) 
+            raise Exception(error_msg)
+        
+        
 
 
     def __eq__(self, obj):
