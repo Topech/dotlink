@@ -6,29 +6,12 @@ import pathlib
 import json
 import os
 from dotlink.dotfile import Dotfile
+from dotlink.target import Target
 
 
 
-class LinkMap:
-    """
-    Class for abstracting a linkmap file. Can be used to load or save linkmap files.
 
-    A linkmap is a collection of destinations, each of which have a collection of dotfiles. 
-    """
-
-
-    _linkmap_dict  = dict()
-        # a dictionary is used to store the map as it provides a convenient way of storing dotfiles
-        # by destination and allows for indexing by strings.
-
-    
-    _map_loaded = False
-        # this boolean flag stops the class entering an erroneous state where it attempts to link
-        # dotfiles from a map that has not been loaded. 
-
-
-
-    def load_json(self, filename):
+    def load_json(filename):
         """
         loads the json file into a dictionary. fails if cannot read or json
         is malformed
@@ -47,35 +30,34 @@ class LinkMap:
             sys.exit()
 
 
-        # convert json_map elements from strings to objects
-        for dest in json_map:
-            dest_path = pathlib.Path(dest).expanduser()
+#        # convert json_map elements from strings to objects
+#        for dest in json_map:
+#            dest_path = pathlib.Path(dest).expanduser()
+#    
+#            # check for invalid paths
+#            if not dest_path.is_dir():
+#                raise NotADirectoryError("destination path '{}' is not a directory or does not exist.". format(dest))
+#
+#            # make an empty list for each destination and append dotfile objects to it
+#            self._linkmap_dict[dest_path] = []
+#
+#            for filepath in json_map[dest]:
+#                dotfile = Dotfile(filepath)
+#
+#                self.add_to_destination(dotfile, dest_path)
+
+
     
-            # check for invalid paths
-            if not dest_path.is_dir():
-                raise NotADirectoryError("destination path '{}' is not a directory or does not exist.". format(dest))
-
-            # make an empty list for each destination and append dotfile objects to it
-            self._linkmap_dict[dest_path] = []
-
-            for filepath in json_map[dest]:
-                dotfile = Dotfile(filepath)
-
-                self.add_to_destination(dotfile, dest_path)
 
 
-        self._map_loaded = True
-    
-
-
-    def save_json(self, filename):
+    def save_json(filename):
         """
         save the linkmap contained in _linkmap_dict as a json file called `filename`
         """
         pass
 
 
-    def add_to_destination(self, dotfile, destination):
+    def add_to_destination(dotfile, destination):
         """
         add a dotfile to a destination in the linkmap
         """
@@ -86,7 +68,7 @@ class LinkMap:
 
 
 
-    def _link_dotfile(self, dotfile, destination):
+    def _link_dotfile(dotfile, destination):
         """
         link a given dotfile to a specified destination in the filesystem.
         """
