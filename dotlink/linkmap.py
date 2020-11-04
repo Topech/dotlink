@@ -16,27 +16,25 @@ def load_from_json(filename):
     is malformed
     """
 
-    # read the file given and store it as a linkmap. catch any exceptions and print more helpful 
-    # error messages.
-    try:
-        with open(filename, 'r') as json_file:
-            json_map = json.load(json_file)
-    except IOError:
-        print('error: json file {} doesn\'t exist or cannot be accessed'.format(filename))
-        sys.exit()
-    except json.JSONDecodeError:
-        print('error: json file {} is malformed'.format(filename))
-        sys.exit()
-
-    return json_map
+    # read the file given and store it as a linkmap
+    json_map = None
+    with open(filename, 'r') as json_file:
+        json_map = json.load(json_file)
+            # raises IOError for unaccessible or non-existant files
+            # raises json.JSONDecodeError for malformed json files
+        return json_map
 
 
 
-def parse_json(json):
+def convert_from_json(json_map):
     """
     check that all given target paths are valid, and check that all dotfiles
     can be found/exist in relevant directory.
     """
+
+    dotfiles = dict()
+    targets = dict()
+
     # convert json_map elements from strings to objects
     for target in json_map:
         target_path = pathlib.Path(target).expanduser()
@@ -44,14 +42,22 @@ def parse_json(json):
         # check for invalid target paths
         if not target_path.is_dir():
             raise NotADirectoryError("target path '{}' is not a directory or does not exist.". format(target))
+        else:
+            targets[target_path] = Target(target_path)
             
         # check for invalid dotfiles
         for filepath in json_map[target]:
-            dotfile_path = Path(dotfile)
+            dotfile_path = pathlib.Path(filepath)
             if not dotfile_path.exists():
-                raise FileNotFoundError("could not find dotfile '{}'.".format(dotfile_path)
+                raise FileNotFoundError("could not find dotfile '{}'.".format(dotfile_path))
+            else:
+                dotfiles[filepath] = Dotfile(dotfile_path)
+
+    return dotfiles, targets
+        
 
 
+    
 
 
 

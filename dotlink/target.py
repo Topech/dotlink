@@ -16,6 +16,9 @@ class Target:
         if not isinstance(path_str, pathlib.Path):
             raise TypeError("the given path is not a path type.")
 
+        # remove ambiguity of home tilda
+        path_str = path_str.expanduser()
+
         # check if given directory is valid
         if not path_str.is_dir():
             raise NotADirectoryError("the target directory could not be found")
@@ -39,3 +42,14 @@ class Target:
             error_msg = "a duplicate dotfile {} is attempted to be added to {}".format(dotfile, self) 
             raise ValueError(error_msg)
         
+
+    def __eq__(self, obj):
+        """ 
+        override the equals operator to compare by stored path
+        """
+
+        # equal if both same type and string
+        if isinstance(obj, Target) and self.string == obj.string:
+            return True
+        else:
+            return False

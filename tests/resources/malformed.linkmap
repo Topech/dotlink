@@ -1,0 +1,5 @@
+{
+    "~": [
+        "tests/resources/linkmap_test_a",
+        "tests/resources/linkmap_test_b",
+        "tests/resources/linkmap_test_c"
